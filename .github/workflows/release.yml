@@ -9,6 +9,11 @@ permissions:
 
 jobs:
   release:
-    uses: jarero321/shared-workflows/.github/workflows/auto-release.yml@main
+    uses: jarero321/shared-workflows/.github/workflows/release-and-publish.yml@main
     permissions:
       contents: write
+    with:
+      package-manager: 'bun'
+      build-command: 'bun run build'
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
