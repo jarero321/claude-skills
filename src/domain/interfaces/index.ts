@@ -13,6 +13,7 @@ export type {
   McpManifest,
   McpInstallConfig,
   McpConfig,
+  McpEnvVar,
   InstalledMcp,
   ClaudeSettings,
   ClaudeSettingsMcpServer,

@@ -50,7 +50,25 @@
         "build": "make build"
       },
       "config": {
-        "command": "./bin/mcp-repo-monitor"
+        "command": "./bin/mcp-repo-monitor",
+        "envVars": [
+          {
+            "name": "GITHUB_TOKEN",
+            "description": "GitHub personal access token for API access",
+            "required": true,
+            "secret": true
+          },
+          {
+            "name": "REPO_OWNER",
+            "description": "Default repository owner/organization",
+            "required": false
+          },
+          {
+            "name": "REPO_NAME",
+            "description": "Default repository name",
+            "required": false
+          }
+        ]
       }
     }
   ]

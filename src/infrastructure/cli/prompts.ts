@@ -4,7 +4,7 @@ import figlet from "figlet";
 import gradient from "gradient-string";
 import type { SkillManifest, InstalledSkill, ValidationResult } from "../../domain/interfaces/index.ts";
 import type { ProgressReporter, OutdatedSkill } from "../../application/use-cases/index.ts";
-import type { McpManifest, InstalledMcp } from "../../domain/interfaces/mcp-service.interface.ts";
+import type { McpManifest, InstalledMcp, McpEnvVar } from "../../domain/interfaces/mcp-service.interface.ts";
 
 const skillsGradient = gradient(["#00d4ff", "#7c3aed", "#f472b6"]);
 
@@ -374,4 +374,61 @@ export async function selectMcpToInstall(mcps: McpManifest[]): Promise<McpManife
 
 export function showInfo(message: string): void {
   p.log.info(message);
+}
+
+export async function runEnvVarWizard(envVars: McpEnvVar[]): Promise<Record<string, string> | null> {
+  if (envVars.length === 0) {
+    return {};
+  }
+
+  console.log();
+  p.log.info(chalk.cyan("Configuration required"));
+  console.log(chalk.dim("  This MCP needs some environment variables to work properly.\n"));
+
+  const result: Record<string, string> = {};
+
+  for (const envVar of envVars) {
+    const label = envVar.required
+      ? `${envVar.name} ${chalk.red("*")}`
+      : envVar.name;
+
+    const hint = envVar.description + (envVar.default ? ` (default: ${envVar.default})` : "");
+
+    const value = await p.text({
+      message: label,
+      placeholder: envVar.secret ? "••••••••" : (envVar.default ?? ""),
+      defaultValue: envVar.default,
+      validate: (input) => {
+        if (envVar.required && !input && !envVar.default) {
+          return `${envVar.name} is required`;
+        }
+      },
+    });
+
+    if (p.isCancel(value)) {
+      p.cancel("Configuration cancelled");
+      return null;
+    }
+
+    const finalValue = (value as string) || envVar.default || "";
+    if (finalValue) {
+      result[envVar.name] = finalValue;
+    }
+  }
+
+  return result;
+}
+
+export function showMcpConfigSummary(name: string, envVars: Record<string, string>): void {
+  const entries = Object.entries(envVars);
+  if (entries.length === 0) return;
+
+  console.log();
+  p.log.info(chalk.cyan("Configuration saved"));
+  console.log();
+  for (const [key, value] of entries) {
+    const masked = value.length > 4 ? value.slice(0, 2) + "•".repeat(value.length - 4) + value.slice(-2) : "••••";
+    console.log(chalk.dim(`  ${key}: ${masked}`));
+  }
+  console.log();
 }

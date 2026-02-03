@@ -40,7 +40,9 @@ import {
   showValidationResult,
   showMcpList,
   showMcpInstallSuccess,
+  showMcpConfigSummary,
   selectMcpToInstall,
+  runEnvVarWizard,
 } from "./infrastructure/cli/index.ts";
 
 const fileService = new FileServiceImpl();
@@ -159,7 +161,24 @@ async function handleMcpInstall(name?: string, exitOnError = true): Promise<void
   }
 
   const progress = createProgressReporter();
-  const result = await installMcpUseCase.execute(mcpName, progress);
+
+  const manifest = await installMcpUseCase.findManifest(mcpName, progress);
+  if (!manifest) {
+    showError(`MCP "${mcpName}" not found in registry`);
+    if (exitOnError) process.exit(1);
+    return;
+  }
+
+  let envVars: Record<string, string> | undefined;
+
+  if (manifest.config.envVars && manifest.config.envVars.length > 0) {
+    const wizardResult = await runEnvVarWizard(manifest.config.envVars);
+    if (wizardResult === null) return;
+    envVars = wizardResult;
+    showMcpConfigSummary(mcpName, envVars);
+  }
+
+  const result = await installMcpUseCase.execute({ name: mcpName, envVars }, progress);
 
   if (result.success && result.mcp) {
     showMcpInstallSuccess(result.mcp.name);

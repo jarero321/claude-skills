@@ -24,6 +24,8 @@ export {
   showValidationResult,
   showMcpList,
   showMcpInstallSuccess,
+  showMcpConfigSummary,
   selectMcpToInstall,
+  runEnvVarWizard,
 } from "./prompts.ts";
 export type { InteractiveAction, McpAction } from "./prompts.ts";
