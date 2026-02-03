@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "skills": [
+    {
+      "name": "gitflow",
+      "description": "Manage Git Flow branching strategy with automated branch creation and merging",
+      "version": "1.0.0",
+      "author": "carlos",
+      "repository": "https://github.com/jarero321/skill-gitflow",
+      "tags": ["git", "gitflow", "branching", "workflow", "release"]
+    },
+    {
+      "name": "jira-ticket",
+      "description": "Generate structured JIRA ticket templates for features, bugs, hotfixes and spikes",
+      "version": "1.0.0",
+      "author": "carlos",
+      "repository": "https://github.com/jarero321/skill-jira-ticket",
+      "tags": ["jira", "tickets", "templates", "agile", "scrum"]
+    },
+    {
+      "name": "atomic-commits",
+      "description": "Write clean, atomic commits following Conventional Commits with GitFlow integration",
+      "version": "1.0.0",
+      "author": "carlos",
+      "repository": "https://github.com/jarero321/skill-atomic-commits",
+      "tags": ["git", "commits", "conventional-commits", "atomic", "gitflow"]
+    }
+  ]
+}
