@@ -1,7 +1,18 @@
-export type Command = "install" | "uninstall" | "list" | "search" | "interactive";
+export type Command =
+  | "install"
+  | "uninstall"
+  | "list"
+  | "search"
+  | "outdated"
+  | "validate"
+  | "mcp"
+  | "interactive";
+
+export type McpSubcommand = "list" | "install" | "uninstall" | "outdated";
 
 export interface ParsedArgs {
   command: Command;
+  subcommand?: McpSubcommand;
   args: string[];
   flags: {
     repo?: string;
@@ -22,8 +33,16 @@ export function parseArgs(argv: string[]): ParsedArgs {
   const command = args[0] as Command;
   const restArgs: string[] = [];
   const flags: ParsedArgs["flags"] = {};
+  let subcommand: McpSubcommand | undefined;
 
-  for (let i = 1; i < args.length; i++) {
+  let startIndex = 1;
+
+  if (command === "mcp" && args[1] && !args[1].startsWith("-")) {
+    subcommand = args[1] as McpSubcommand;
+    startIndex = 2;
+  }
+
+  for (let i = startIndex; i < args.length; i++) {
     const arg = args[i]!;
 
     if (arg === "--repo" || arg === "-r") {
@@ -35,7 +54,7 @@ export function parseArgs(argv: string[]): ParsedArgs {
     }
   }
 
-  return { command, args: restArgs, flags };
+  return { command, subcommand, args: restArgs, flags };
 }
 
 export function showHelp(): void {
@@ -48,6 +67,14 @@ Commands:
   uninstall <skill-name>    Uninstall a skill
   list                      List installed skills
   search <query>            Search available skills in registry
+  outdated                  Check for outdated skills
+  validate <path>           Validate a skill directory
+
+MCP Commands:
+  mcp list                  List available MCPs in registry
+  mcp install <name>        Install an MCP server
+  mcp uninstall <name>      Uninstall an MCP server
+  mcp outdated              Check for outdated MCPs
 
 Options:
   -r, --repo <url>    Git repository URL for direct installation
@@ -59,6 +86,10 @@ Examples:
   claude-skills uninstall code-review
   claude-skills list
   claude-skills search security
+  claude-skills outdated
+  claude-skills validate ./my-skill
+  claude-skills mcp list
+  claude-skills mcp install repo-monitor
   claude-skills                      # Interactive mode
 `);
 }
