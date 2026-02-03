@@ -2,17 +2,23 @@ export { parseArgs, showHelp } from "./commands.ts";
 export type { Command, ParsedArgs, McpSubcommand } from "./commands.ts";
 export {
   showBanner,
+  showSeparator,
+  showGoodbye,
+  sleep,
   selectAction,
+  selectMcpAction,
   promptSkillName,
   promptSearchQuery,
   selectSkillToInstall,
   selectSkillToUninstall,
+  selectMcpToUninstall,
   confirmAction,
   createProgressReporter,
   showSkillsList,
   showSearchResults,
   showSuccess,
   showError,
+  showInfo,
   showInstallSuccess,
   showOutdatedResults,
   showValidationResult,
@@ -20,4 +26,4 @@ export {
   showMcpInstallSuccess,
   selectMcpToInstall,
 } from "./prompts.ts";
-export type { InteractiveAction } from "./prompts.ts";
+export type { InteractiveAction, McpAction } from "./prompts.ts";

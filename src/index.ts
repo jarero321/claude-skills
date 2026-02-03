@@ -19,16 +19,22 @@ import {
   parseArgs,
   showHelp,
   showBanner,
+  showSeparator,
+  showGoodbye,
+  sleep,
   selectAction,
+  selectMcpAction,
   promptSearchQuery,
   selectSkillToInstall,
   selectSkillToUninstall,
+  selectMcpToUninstall,
   confirmAction,
   createProgressReporter,
   showSkillsList,
   showSearchResults,
   showSuccess,
   showError,
+  showInfo,
   showInstallSuccess,
   showOutdatedResults,
   showValidationResult,
@@ -51,7 +57,7 @@ const checkOutdatedUseCase = new CheckOutdatedUseCase(fileService, registryServi
 const installMcpUseCase = new InstallMcpUseCase(mcpService);
 const uninstallMcpUseCase = new UninstallMcpUseCase(mcpService);
 
-async function handleInstall(skillName?: string, repoUrl?: string): Promise<void> {
+async function handleInstall(skillName?: string, repoUrl?: string, exitOnError = true): Promise<void> {
   const progress = createProgressReporter();
 
   const result = await installUseCase.execute(
@@ -63,11 +69,11 @@ async function handleInstall(skillName?: string, repoUrl?: string): Promise<void
     showInstallSuccess(result.skill);
   } else {
     showError(result.error ?? "Installation failed");
-    process.exit(1);
+    if (exitOnError) process.exit(1);
   }
 }
 
-async function handleUninstall(skillName?: string): Promise<void> {
+async function handleUninstall(skillName?: string, exitOnError = true): Promise<void> {
   let name = skillName;
 
   if (!name) {
@@ -79,7 +85,7 @@ async function handleUninstall(skillName?: string): Promise<void> {
 
   const confirmed = await confirmAction(`Are you sure you want to uninstall "${name}"?`);
   if (!confirmed) {
-    showSuccess("Operation cancelled");
+    showInfo("Operation cancelled");
     return;
   }
 
@@ -90,7 +96,7 @@ async function handleUninstall(skillName?: string): Promise<void> {
     showSuccess(`Skill "${name}" uninstalled successfully`);
   } else {
     showError(result.error ?? "Uninstallation failed");
-    process.exit(1);
+    if (exitOnError) process.exit(1);
   }
 }
 
@@ -122,16 +128,17 @@ async function handleOutdated(): Promise<void> {
   showOutdatedResults(result.skills);
 }
 
-async function handleValidate(path?: string): Promise<void> {
+async function handleValidate(path?: string, exitOnError = true): Promise<void> {
   if (!path) {
     showError("Please provide a path to validate");
-    process.exit(1);
+    if (exitOnError) process.exit(1);
+    return;
   }
 
   const result = await skillValidator.validateSkillPath(path);
   showValidationResult(path, result);
 
-  if (!result.valid) {
+  if (!result.valid && exitOnError) {
     process.exit(1);
   }
 }
@@ -141,7 +148,7 @@ async function handleMcpList(): Promise<void> {
   showMcpList(mcps);
 }
 
-async function handleMcpInstall(name?: string): Promise<void> {
+async function handleMcpInstall(name?: string, exitOnError = true): Promise<void> {
   let mcpName = name;
 
   if (!mcpName) {
@@ -158,30 +165,34 @@ async function handleMcpInstall(name?: string): Promise<void> {
     showMcpInstallSuccess(result.mcp.name);
   } else {
     showError(result.error ?? "MCP installation failed");
-    process.exit(1);
+    if (exitOnError) process.exit(1);
   }
 }
 
-async function handleMcpUninstall(name?: string): Promise<void> {
-  if (!name) {
-    showError("Please provide an MCP name to uninstall");
-    process.exit(1);
+async function handleMcpUninstall(name?: string, exitOnError = true): Promise<void> {
+  let mcpName = name;
+
+  if (!mcpName) {
+    const mcps = await mcpService.listInstalled();
+    const selected = await selectMcpToUninstall(mcps);
+    if (!selected) return;
+    mcpName = selected.name;
   }
 
-  const confirmed = await confirmAction(`Are you sure you want to uninstall MCP "${name}"?`);
+  const confirmed = await confirmAction(`Are you sure you want to uninstall MCP "${mcpName}"?`);
   if (!confirmed) {
-    showSuccess("Operation cancelled");
+    showInfo("Operation cancelled");
     return;
   }
 
   const progress = createProgressReporter();
-  const result = await uninstallMcpUseCase.execute(name, progress);
+  const result = await uninstallMcpUseCase.execute(mcpName, progress);
 
   if (result.success) {
-    showSuccess(`MCP "${name}" uninstalled successfully`);
+    showSuccess(`MCP "${mcpName}" uninstalled successfully`);
   } else {
     showError(result.error ?? "MCP uninstallation failed");
-    process.exit(1);
+    if (exitOnError) process.exit(1);
   }
 }
 
@@ -211,33 +222,97 @@ async function handleMcpOutdated(): Promise<void> {
   console.log();
 }
 
-async function handleInteractive(): Promise<void> {
-  showBanner();
+async function handleInstallAction(): Promise<void> {
+  const query = await promptSearchQuery();
+  if (query === null) return;
 
-  const action = await selectAction();
-  if (!action || action === "exit") return;
+  const skills = await searchUseCase.execute(query);
+  const selected = await selectSkillToInstall(skills);
+  if (!selected) return;
+
+  await handleInstall(selected.name, undefined, false);
+}
+
+async function handleUninstallAction(): Promise<void> {
+  await handleUninstall(undefined, false);
+}
+
+async function handleListAction(): Promise<void> {
+  await handleList();
+}
+
+async function handleSearchAction(): Promise<void> {
+  await handleSearch();
+}
+
+async function handleOutdatedAction(): Promise<void> {
+  await handleOutdated();
+}
+
+async function handleMcpMenu(): Promise<void> {
+  const action = await selectMcpAction();
+
+  if (!action || action === "back") return;
 
   switch (action) {
-    case "install": {
-      const query = await promptSearchQuery();
-      if (query === null) return;
-
-      const skills = await searchUseCase.execute(query);
-      const selected = await selectSkillToInstall(skills);
-      if (!selected) return;
-
-      await handleInstall(selected.name);
+    case "install":
+      await handleMcpInstall(undefined, false);
       break;
-    }
     case "uninstall":
-      await handleUninstall();
+      await handleMcpUninstall(undefined, false);
       break;
     case "list":
-      await handleList();
+      await handleMcpList();
       break;
-    case "search":
-      await handleSearch();
+    case "outdated":
+      await handleMcpOutdated();
       break;
+  }
+}
+
+async function executeAction(action: string): Promise<void> {
+  try {
+    switch (action) {
+      case "install":
+        await handleInstallAction();
+        break;
+      case "uninstall":
+        await handleUninstallAction();
+        break;
+      case "list":
+        await handleListAction();
+        break;
+      case "search":
+        await handleSearchAction();
+        break;
+      case "mcp":
+        await handleMcpMenu();
+        break;
+      case "outdated":
+        await handleOutdatedAction();
+        break;
+    }
+  } catch (error) {
+    showError(error instanceof Error ? error.message : "An unexpected error occurred");
+  }
+}
+
+async function handleInteractive(): Promise<void> {
+  console.clear();
+  showBanner();
+
+  while (true) {
+    const action = await selectAction();
+
+    if (!action || action === "exit") {
+      showGoodbye();
+      return;
+    }
+
+    await executeAction(action);
+
+    await sleep(800);
+    showSeparator();
   }
 }
 

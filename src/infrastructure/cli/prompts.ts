@@ -4,7 +4,7 @@ import figlet from "figlet";
 import gradient from "gradient-string";
 import type { SkillManifest, InstalledSkill, ValidationResult } from "../../domain/interfaces/index.ts";
 import type { ProgressReporter, OutdatedSkill } from "../../application/use-cases/index.ts";
-import type { McpManifest } from "../../domain/interfaces/mcp-service.interface.ts";
+import type { McpManifest, InstalledMcp } from "../../domain/interfaces/mcp-service.interface.ts";
 
 const skillsGradient = gradient(["#00d4ff", "#7c3aed", "#f472b6"]);
 
@@ -15,26 +15,85 @@ export function showBanner(): void {
   console.log(chalk.dim("  Claude Code Agent Skills Manager\n"));
 }
 
-export type InteractiveAction = "install" | "uninstall" | "list" | "search" | "exit";
+export function showSeparator(): void {
+  console.log();
+  console.log(chalk.dim("─".repeat(50)));
+  console.log();
+}
+
+export function showGoodbye(): void {
+  console.log();
+  p.outro(skillsGradient("✨ Thanks for using Claude Skills!"));
+}
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export type InteractiveAction = "install" | "uninstall" | "list" | "search" | "mcp" | "outdated" | "exit";
 
 export async function selectAction(): Promise<InteractiveAction | null> {
   const result = await p.select({
     message: "What would you like to do?",
     options: [
-      { value: "install", label: "Install a skill", hint: "Download and install from registry" },
-      { value: "uninstall", label: "Uninstall a skill", hint: "Remove an installed skill" },
-      { value: "list", label: "List installed skills", hint: "Show all installed skills" },
-      { value: "search", label: "Search skills", hint: "Browse available skills" },
-      { value: "exit", label: "Exit", hint: "Quit the program" },
+      { value: "install", label: "📦 Install skill", hint: "Add a new skill" },
+      { value: "uninstall", label: "🗑️  Uninstall skill", hint: "Remove installed skill" },
+      { value: "list", label: "📋 List installed", hint: "Show all skills" },
+      { value: "search", label: "🔍 Search skills", hint: "Find in registry" },
+      { value: "mcp", label: "🔌 MCP Servers", hint: "Manage MCP servers" },
+      { value: "outdated", label: "🔄 Check updates", hint: "Find outdated skills" },
+      { value: "exit", label: "👋 Exit", hint: "Close the CLI" },
     ],
   });
 
   if (p.isCancel(result)) {
-    p.cancel("Operation cancelled");
     return null;
   }
 
   return result as InteractiveAction;
+}
+
+export type McpAction = "install" | "uninstall" | "list" | "outdated" | "back";
+
+export async function selectMcpAction(): Promise<McpAction | null> {
+  const result = await p.select({
+    message: "MCP Servers",
+    options: [
+      { value: "install", label: "📦 Install MCP", hint: "Add a new MCP server" },
+      { value: "uninstall", label: "🗑️  Uninstall MCP", hint: "Remove installed MCP" },
+      { value: "list", label: "📋 List available", hint: "Show all MCPs" },
+      { value: "outdated", label: "🔄 Check updates", hint: "Find outdated MCPs" },
+      { value: "back", label: "⬅️  Back", hint: "Return to main menu" },
+    ],
+  });
+
+  if (p.isCancel(result)) {
+    return null;
+  }
+
+  return result as McpAction;
+}
+
+export async function selectMcpToUninstall(mcps: InstalledMcp[]): Promise<InstalledMcp | null> {
+  if (mcps.length === 0) {
+    p.log.warn("No MCPs installed");
+    return null;
+  }
+
+  const result = await p.select({
+    message: "Select an MCP to uninstall:",
+    options: mcps.map((mcp) => ({
+      value: mcp.name,
+      label: mcp.name,
+      hint: `Installed at ${mcp.path}`,
+    })),
+  });
+
+  if (p.isCancel(result)) {
+    return null;
+  }
+
+  return mcps.find((m) => m.name === result) ?? null;
 }
 
 export async function promptSkillName(message: string): Promise<string | null> {
@@ -307,9 +366,12 @@ export async function selectMcpToInstall(mcps: McpManifest[]): Promise<McpManife
   });
 
   if (p.isCancel(result)) {
-    p.cancel("Operation cancelled");
     return null;
   }
 
   return mcps.find((m) => m.name === result) ?? null;
+}
+
+export function showInfo(message: string): void {
+  p.log.info(message);
 }
