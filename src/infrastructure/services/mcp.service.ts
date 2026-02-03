@@ -15,7 +15,7 @@ import type {
 const execAsync = promisify(exec);
 
 const CLAUDE_DIR = join(homedir(), ".claude");
-const CLAUDE_SETTINGS_PATH = join(CLAUDE_DIR, "settings.json");
+const CLAUDE_CONFIG_PATH = join(homedir(), ".claude.json");
 const MCP_INSTALL_DIR = join(CLAUDE_DIR, "mcp-servers");
 
 export class McpServiceImpl implements McpService {
@@ -114,14 +114,12 @@ export class McpServiceImpl implements McpService {
   }
 
   async readClaudeSettings(): Promise<ClaudeSettings> {
-    await mkdir(CLAUDE_DIR, { recursive: true });
-
-    if (!existsSync(CLAUDE_SETTINGS_PATH)) {
+    if (!existsSync(CLAUDE_CONFIG_PATH)) {
       return {};
     }
 
     try {
-      const content = await readFile(CLAUDE_SETTINGS_PATH, "utf-8");
+      const content = await readFile(CLAUDE_CONFIG_PATH, "utf-8");
       return JSON.parse(content) as ClaudeSettings;
     } catch {
       return {};
@@ -129,7 +127,6 @@ export class McpServiceImpl implements McpService {
   }
 
   async writeClaudeSettings(settings: ClaudeSettings): Promise<void> {
-    await mkdir(CLAUDE_DIR, { recursive: true });
-    await writeFile(CLAUDE_SETTINGS_PATH, JSON.stringify(settings, null, 2), "utf-8");
+    await writeFile(CLAUDE_CONFIG_PATH, JSON.stringify(settings, null, 2), "utf-8");
   }
 }
