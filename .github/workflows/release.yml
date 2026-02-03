@@ -1,0 +1,9 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    uses: jarero321/shared-workflows/.github/workflows/auto-release.yml@main
