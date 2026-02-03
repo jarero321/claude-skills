@@ -1,6 +1,6 @@
 {
   "name": "@cjarero183006/claude-skills",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "CLI for installing, managing and discovering Claude Code Agent Skills",
   "type": "module",
   "main": "dist/index.js",
