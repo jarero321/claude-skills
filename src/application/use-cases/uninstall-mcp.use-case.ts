@@ -1,5 +1,6 @@
+import type { ProgressReporter } from "@cjarero183006/cli-builder/interfaces";
+import { wrapError } from "@cjarero183006/cli-builder/utils";
 import type { McpService } from "../../domain/interfaces/index.ts";
-import type { ProgressReporter } from "./install-skill.use-case.ts";
 
 export interface UninstallMcpResult {
   success: boolean;
@@ -24,10 +25,7 @@ export class UninstallMcpUseCase {
       return { success: true };
     } catch (error) {
       progress.stop(`Failed to uninstall MCP`);
-      return {
-        success: false,
-        error: `Failed to uninstall MCP: ${error instanceof Error ? error.message : "Unknown error"}`,
-      };
+      return { success: false, error: wrapError(error, "Failed to uninstall MCP") };
     }
   }
 }

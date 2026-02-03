@@ -1,14 +1,5 @@
-import { defineConfig } from "vitest/config";
+import { createVitestConfig } from "@cjarero183006/cli-builder/configs/vitest.base.js";
 
-export default defineConfig({
-  test: {
-    globals: true,
-    environment: "node",
-    include: ["src/__tests__/**/*.spec.ts"],
-    coverage: {
-      provider: "v8",
-      reporter: ["text", "json", "html"],
-      exclude: ["src/__tests__/**", "dist/**"],
-    },
-  },
+export default createVitestConfig({
+  include: ["src/__tests__/**/*.spec.ts"],
 });

@@ -1,5 +1,6 @@
+import type { ProgressReporter } from "@cjarero183006/cli-builder/interfaces";
+import { wrapError } from "@cjarero183006/cli-builder/utils";
 import type { McpService, McpManifest } from "../../domain/interfaces/index.ts";
-import type { ProgressReporter } from "./install-skill.use-case.ts";
 
 export interface InstallMcpResult {
   success: boolean;
@@ -50,10 +51,7 @@ export class InstallMcpUseCase {
       return { success: true, mcp: manifest };
     } catch (error) {
       progress.stop(`Failed to install MCP`);
-      return {
-        success: false,
-        error: `Failed to install MCP: ${error instanceof Error ? error.message : "Unknown error"}`,
-      };
+      return { success: false, error: wrapError(error, "Failed to install MCP") };
     }
   }
 }

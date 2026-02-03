@@ -1,7 +1,7 @@
 export { parseArgs, showHelp } from "./commands.ts";
 export type { Command, ParsedArgs, McpSubcommand } from "./commands.ts";
 export {
-  showBanner,
+  showBannerUI,
   showSeparator,
   showGoodbye,
   sleep,

@@ -1,13 +1,10 @@
+import type { ProgressReporter } from "@cjarero183006/cli-builder/interfaces";
+import { wrapError } from "@cjarero183006/cli-builder/utils";
 import type { FileService } from "../../domain/interfaces/index.ts";
 
 export interface UninstallSkillResult {
   success: boolean;
   error?: string;
-}
-
-export interface ProgressReporter {
-  start(message: string): void;
-  stop(message: string): void;
 }
 
 export class UninstallSkillUseCase {
@@ -26,7 +23,7 @@ export class UninstallSkillUseCase {
       return { success: true };
     } catch (error) {
       progress.stop(`Failed to remove ${skillName}`);
-      return { success: false, error: `Failed to remove skill: ${error instanceof Error ? error.message : "Unknown error"}` };
+      return { success: false, error: wrapError(error, "Failed to remove skill") };
     }
   }
 }

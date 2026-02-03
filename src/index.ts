@@ -18,7 +18,7 @@ import {
 import {
   parseArgs,
   showHelp,
-  showBanner,
+  showBannerUI,
   showSeparator,
   showGoodbye,
   sleep,
@@ -318,7 +318,7 @@ async function executeAction(action: string): Promise<void> {
 
 async function handleInteractive(): Promise<void> {
   console.clear();
-  showBanner();
+  showBannerUI();
 
   while (true) {
     const action = await selectAction();

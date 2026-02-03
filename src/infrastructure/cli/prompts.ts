@@ -1,33 +1,40 @@
-import * as p from "@clack/prompts";
-import chalk from "chalk";
-import figlet from "figlet";
-import gradient from "gradient-string";
+import {
+  showBanner,
+  showSeparator as showSeparatorUI,
+  showGoodbye as showGoodbyeUI,
+  showSuccess as showSuccessUI,
+  showError as showErrorUI,
+  showInfo as showInfoUI,
+  confirmAction as confirmActionUI,
+  createProgressReporter,
+  showNote,
+  clack as p,
+  chalk,
+  sleep,
+} from "@cjarero183006/cli-builder";
+import type { ProgressReporter } from "@cjarero183006/cli-builder/interfaces";
 import type { SkillManifest, InstalledSkill, ValidationResult } from "../../domain/interfaces/index.ts";
-import type { ProgressReporter, OutdatedSkill } from "../../application/use-cases/index.ts";
+import type { OutdatedSkill } from "../../application/use-cases/index.ts";
 import type { McpManifest, InstalledMcp, McpEnvVar } from "../../domain/interfaces/mcp-service.interface.ts";
 
-const skillsGradient = gradient(["#00d4ff", "#7c3aed", "#f472b6"]);
+export { createProgressReporter, sleep };
+export type { ProgressReporter };
 
-export function showBanner(): void {
-  console.clear();
-  const title = figlet.textSync("Skills", { font: "Small" });
-  console.log(skillsGradient(title));
-  console.log(chalk.dim("  Claude Code Agent Skills Manager\n"));
+export function showBannerUI(): void {
+  showBanner({
+    title: "Skills",
+    subtitle: "Claude Code Agent Skills Manager",
+  });
 }
 
 export function showSeparator(): void {
-  console.log();
-  console.log(chalk.dim("─".repeat(50)));
-  console.log();
+  showSeparatorUI();
 }
 
 export function showGoodbye(): void {
-  console.log();
-  p.outro(skillsGradient("✨ Thanks for using Claude Skills!"));
-}
-
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  showGoodbyeUI({
+    message: "Thanks for using Claude Skills!",
+  });
 }
 
 export type InteractiveAction = "install" | "uninstall" | "list" | "search" | "mcp" | "outdated" | "exit";
@@ -36,13 +43,13 @@ export async function selectAction(): Promise<InteractiveAction | null> {
   const result = await p.select({
     message: "What would you like to do?",
     options: [
-      { value: "install", label: "📦 Install skill", hint: "Add a new skill" },
-      { value: "uninstall", label: "🗑️  Uninstall skill", hint: "Remove installed skill" },
-      { value: "list", label: "📋 List installed", hint: "Show all skills" },
-      { value: "search", label: "🔍 Search skills", hint: "Find in registry" },
-      { value: "mcp", label: "🔌 MCP Servers", hint: "Manage MCP servers" },
-      { value: "outdated", label: "🔄 Check updates", hint: "Find outdated skills" },
-      { value: "exit", label: "👋 Exit", hint: "Close the CLI" },
+      { value: "install", label: "Install skill", hint: "Add a new skill" },
+      { value: "uninstall", label: "Uninstall skill", hint: "Remove installed skill" },
+      { value: "list", label: "List installed", hint: "Show all skills" },
+      { value: "search", label: "Search skills", hint: "Find in registry" },
+      { value: "mcp", label: "MCP Servers", hint: "Manage MCP servers" },
+      { value: "outdated", label: "Check updates", hint: "Find outdated skills" },
+      { value: "exit", label: "Exit", hint: "Close the CLI" },
     ],
   });
 
@@ -59,11 +66,11 @@ export async function selectMcpAction(): Promise<McpAction | null> {
   const result = await p.select({
     message: "MCP Servers",
     options: [
-      { value: "install", label: "📦 Install MCP", hint: "Add a new MCP server" },
-      { value: "uninstall", label: "🗑️  Uninstall MCP", hint: "Remove installed MCP" },
-      { value: "list", label: "📋 List available", hint: "Show all MCPs" },
-      { value: "outdated", label: "🔄 Check updates", hint: "Find outdated MCPs" },
-      { value: "back", label: "⬅️  Back", hint: "Return to main menu" },
+      { value: "install", label: "Install MCP", hint: "Add a new MCP server" },
+      { value: "uninstall", label: "Uninstall MCP", hint: "Remove installed MCP" },
+      { value: "list", label: "List available", hint: "Show all MCPs" },
+      { value: "outdated", label: "Check updates", hint: "Find outdated MCPs" },
+      { value: "back", label: "Back", hint: "Return to main menu" },
     ],
   });
 
@@ -175,23 +182,7 @@ export async function selectSkillToUninstall(skills: InstalledSkill[]): Promise<
 }
 
 export async function confirmAction(message: string): Promise<boolean> {
-  const result = await p.confirm({
-    message,
-  });
-
-  if (p.isCancel(result)) {
-    return false;
-  }
-
-  return result;
-}
-
-export function createProgressReporter(): ProgressReporter {
-  const spinner = p.spinner();
-  return {
-    start: (message: string) => spinner.start(message),
-    stop: (message: string) => spinner.stop(message),
-  };
+  return confirmActionUI(message);
 }
 
 export function showSkillsList(skills: InstalledSkill[]): void {
@@ -234,16 +225,16 @@ export function showSearchResults(skills: SkillManifest[]): void {
 }
 
 export function showSuccess(message: string): void {
-  p.outro(chalk.green(message));
+  showSuccessUI(message);
 }
 
 export function showError(message: string): void {
-  p.log.error(message);
+  showErrorUI(message);
 }
 
 export function showInstallSuccess(skill: InstalledSkill): void {
   console.log();
-  p.note(
+  showNote(
     `${chalk.cyan("Skill installed:")} ${skill.name}\n` +
       `${chalk.cyan("Version:")} ${skill.version}\n` +
       `${chalk.cyan("Path:")} ${skill.path}\n\n` +
@@ -272,7 +263,7 @@ export function showOutdatedResults(skills: OutdatedSkill[]): void {
       console.log(
         chalk.yellow(`  ${skill.name}: `) +
           chalk.dim(`${skill.installedVersion}`) +
-          chalk.yellow(` → `) +
+          chalk.yellow(` -> `) +
           chalk.green(`${skill.latestVersion}`) +
           chalk.yellow(` (update available)`)
       );
@@ -307,14 +298,14 @@ export function showValidationResult(path: string, result: ValidationResult): vo
   if (result.errors.length > 0) {
     console.log();
     for (const error of result.errors) {
-      console.log(chalk.red(`  ✗ ${error}`));
+      console.log(chalk.red(`  x ${error}`));
     }
   }
 
   if (result.warnings.length > 0) {
     console.log();
     for (const warning of result.warnings) {
-      console.log(chalk.yellow(`  ⚠ ${warning}`));
+      console.log(chalk.yellow(`  ! ${warning}`));
     }
   }
 
@@ -341,7 +332,7 @@ export function showMcpList(mcps: McpManifest[]): void {
 
 export function showMcpInstallSuccess(name: string): void {
   console.log();
-  p.note(
+  showNote(
     `${chalk.cyan("MCP installed:")} ${name}\n\n` +
       `The MCP has been added to ~/.claude/settings.json\n` +
       `and will be available in Claude Code.`,
@@ -373,7 +364,7 @@ export async function selectMcpToInstall(mcps: McpManifest[]): Promise<McpManife
 }
 
 export function showInfo(message: string): void {
-  p.log.info(message);
+  showInfoUI(message);
 }
 
 export async function runEnvVarWizard(envVars: McpEnvVar[]): Promise<Record<string, string> | null> {
@@ -392,11 +383,9 @@ export async function runEnvVarWizard(envVars: McpEnvVar[]): Promise<Record<stri
       ? `${envVar.name} ${chalk.red("*")}`
       : envVar.name;
 
-    const hint = envVar.description + (envVar.default ? ` (default: ${envVar.default})` : "");
-
     const value = await p.text({
       message: label,
-      placeholder: envVar.secret ? "••••••••" : (envVar.default ?? ""),
+      placeholder: envVar.secret ? "........" : (envVar.default ?? ""),
       defaultValue: envVar.default,
       validate: (input) => {
         if (envVar.required && !input && !envVar.default) {
@@ -427,7 +416,7 @@ export function showMcpConfigSummary(name: string, envVars: Record<string, strin
   p.log.info(chalk.cyan("Configuration saved"));
   console.log();
   for (const [key, value] of entries) {
-    const masked = value.length > 4 ? value.slice(0, 2) + "•".repeat(value.length - 4) + value.slice(-2) : "••••";
+    const masked = value.length > 4 ? value.slice(0, 2) + ".".repeat(value.length - 4) + value.slice(-2) : "....";
     console.log(chalk.dim(`  ${key}: ${masked}`));
   }
   console.log();

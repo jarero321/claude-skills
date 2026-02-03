@@ -2,8 +2,7 @@ import { homedir } from "os";
 import { join } from "path";
 import { mkdir, readFile, writeFile, rm } from "fs/promises";
 import { existsSync } from "fs";
-import { exec } from "child_process";
-import { promisify } from "util";
+import { execSafe, escapeShellArg } from "@cjarero183006/cli-builder/utils";
 import type {
   McpService,
   McpManifest,
@@ -11,8 +10,6 @@ import type {
   ClaudeSettings,
   SkillRegistry,
 } from "../../domain/interfaces/index.ts";
-
-const execAsync = promisify(exec);
 
 const CLAUDE_DIR = join(homedir(), ".claude");
 const CLAUDE_CONFIG_PATH = join(homedir(), ".claude.json");
@@ -38,14 +35,14 @@ export class McpServiceImpl implements McpService {
       await rm(installPath, { recursive: true, force: true });
     }
 
-    await execAsync(`git clone ${manifest.repository} ${installPath}`);
+    await execSafe(`git clone ${escapeShellArg(manifest.repository)} ${escapeShellArg(installPath)}`);
 
     if (manifest.install.build) {
-      await execAsync(manifest.install.build, { cwd: installPath });
+      await execSafe(manifest.install.build, { cwd: installPath });
     }
 
     if (manifest.install.install) {
-      await execAsync(manifest.install.install, { cwd: installPath });
+      await execSafe(manifest.install.install, { cwd: installPath });
     }
 
     const settings = await this.readClaudeSettings();

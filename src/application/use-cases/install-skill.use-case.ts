@@ -1,4 +1,6 @@
 import { join } from "path";
+import type { ProgressReporter } from "@cjarero183006/cli-builder/interfaces";
+import { wrapError } from "@cjarero183006/cli-builder/utils";
 import type { FileService, GitService, SkillRegistry, InstalledSkill, SkillManifest } from "../../domain/interfaces/index.ts";
 
 export interface InstallSkillInput {
@@ -12,10 +14,7 @@ export interface InstallSkillResult {
   error?: string;
 }
 
-export interface ProgressReporter {
-  start(message: string): void;
-  stop(message: string): void;
-}
+export type { ProgressReporter };
 
 export class InstallSkillUseCase {
   constructor(
@@ -72,7 +71,7 @@ export class InstallSkillUseCase {
       await this.gitService.clone(repoUrl, destPath);
     } catch (error) {
       progress.stop(`Failed to clone repository`);
-      return { success: false, error: `Failed to clone repository: ${error instanceof Error ? error.message : "Unknown error"}` };
+      return { success: false, error: wrapError(error, "Failed to clone repository") };
     }
 
     progress.stop(`Cloned ${skillName}`);
