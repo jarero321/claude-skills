@@ -29,7 +29,7 @@ export class McpServiceImpl implements McpService {
     return this.registry.findMcpByName(name);
   }
 
-  async install(manifest: McpManifest): Promise<void> {
+  async install(manifest: McpManifest, envVars?: Record<string, string>): Promise<void> {
     await mkdir(MCP_INSTALL_DIR, { recursive: true });
 
     const installPath = join(MCP_INSTALL_DIR, manifest.name);
@@ -58,10 +58,15 @@ export class McpServiceImpl implements McpService {
       ? join(installPath, manifest.config.command)
       : manifest.config.command;
 
+    const mergedEnv = {
+      ...manifest.config.env,
+      ...envVars,
+    };
+
     settings.mcpServers[manifest.name] = {
       command,
       args: manifest.config.args,
-      env: manifest.config.env,
+      env: Object.keys(mergedEnv).length > 0 ? mergedEnv : undefined,
     };
 
     await this.writeClaudeSettings(settings);

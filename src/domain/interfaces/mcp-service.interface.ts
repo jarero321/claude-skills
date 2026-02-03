@@ -4,10 +4,19 @@ export interface McpInstallConfig {
   install?: string;
 }
 
+export interface McpEnvVar {
+  name: string;
+  description: string;
+  required?: boolean;
+  default?: string;
+  secret?: boolean;
+}
+
 export interface McpConfig {
   command: string;
   args?: string[];
   env?: Record<string, string>;
+  envVars?: McpEnvVar[];
 }
 
 export interface McpManifest {
@@ -41,7 +50,7 @@ export interface ClaudeSettings {
 export interface McpService {
   listAvailable(): Promise<McpManifest[]>;
   findByName(name: string): Promise<McpManifest | null>;
-  install(manifest: McpManifest): Promise<void>;
+  install(manifest: McpManifest, envVars?: Record<string, string>): Promise<void>;
   uninstall(name: string): Promise<void>;
   listInstalled(): Promise<InstalledMcp[]>;
   isInstalled(name: string): Promise<boolean>;
