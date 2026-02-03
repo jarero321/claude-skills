@@ -4,14 +4,22 @@ import {
   UninstallSkillUseCase,
   ListSkillsUseCase,
   SearchSkillsUseCase,
+  CheckOutdatedUseCase,
+  InstallMcpUseCase,
+  UninstallMcpUseCase,
 } from "./application/use-cases/index.ts";
-import { FileServiceImpl, GitServiceImpl, RegistryServiceImpl } from "./infrastructure/services/index.ts";
+import {
+  FileServiceImpl,
+  GitServiceImpl,
+  RegistryServiceImpl,
+  SkillValidatorImpl,
+  McpServiceImpl,
+} from "./infrastructure/services/index.ts";
 import {
   parseArgs,
   showHelp,
   showBanner,
   selectAction,
-  promptSkillName,
   promptSearchQuery,
   selectSkillToInstall,
   selectSkillToUninstall,
@@ -22,16 +30,26 @@ import {
   showSuccess,
   showError,
   showInstallSuccess,
+  showOutdatedResults,
+  showValidationResult,
+  showMcpList,
+  showMcpInstallSuccess,
+  selectMcpToInstall,
 } from "./infrastructure/cli/index.ts";
 
 const fileService = new FileServiceImpl();
 const gitService = new GitServiceImpl();
 const registryService = new RegistryServiceImpl();
+const skillValidator = new SkillValidatorImpl();
+const mcpService = new McpServiceImpl(registryService);
 
 const installUseCase = new InstallSkillUseCase(fileService, gitService, registryService);
 const uninstallUseCase = new UninstallSkillUseCase(fileService);
 const listUseCase = new ListSkillsUseCase(fileService);
 const searchUseCase = new SearchSkillsUseCase(registryService);
+const checkOutdatedUseCase = new CheckOutdatedUseCase(fileService, registryService);
+const installMcpUseCase = new InstallMcpUseCase(mcpService);
+const uninstallMcpUseCase = new UninstallMcpUseCase(mcpService);
 
 async function handleInstall(skillName?: string, repoUrl?: string): Promise<void> {
   const progress = createProgressReporter();
@@ -94,6 +112,105 @@ async function handleSearch(query?: string): Promise<void> {
   showSearchResults(skills);
 }
 
+async function handleOutdated(): Promise<void> {
+  const progress = createProgressReporter();
+  progress.start("Checking for outdated skills...");
+
+  const result = await checkOutdatedUseCase.execute();
+  progress.stop("Check complete");
+
+  showOutdatedResults(result.skills);
+}
+
+async function handleValidate(path?: string): Promise<void> {
+  if (!path) {
+    showError("Please provide a path to validate");
+    process.exit(1);
+  }
+
+  const result = await skillValidator.validateSkillPath(path);
+  showValidationResult(path, result);
+
+  if (!result.valid) {
+    process.exit(1);
+  }
+}
+
+async function handleMcpList(): Promise<void> {
+  const mcps = await mcpService.listAvailable();
+  showMcpList(mcps);
+}
+
+async function handleMcpInstall(name?: string): Promise<void> {
+  let mcpName = name;
+
+  if (!mcpName) {
+    const mcps = await mcpService.listAvailable();
+    const selected = await selectMcpToInstall(mcps);
+    if (!selected) return;
+    mcpName = selected.name;
+  }
+
+  const progress = createProgressReporter();
+  const result = await installMcpUseCase.execute(mcpName, progress);
+
+  if (result.success && result.mcp) {
+    showMcpInstallSuccess(result.mcp.name);
+  } else {
+    showError(result.error ?? "MCP installation failed");
+    process.exit(1);
+  }
+}
+
+async function handleMcpUninstall(name?: string): Promise<void> {
+  if (!name) {
+    showError("Please provide an MCP name to uninstall");
+    process.exit(1);
+  }
+
+  const confirmed = await confirmAction(`Are you sure you want to uninstall MCP "${name}"?`);
+  if (!confirmed) {
+    showSuccess("Operation cancelled");
+    return;
+  }
+
+  const progress = createProgressReporter();
+  const result = await uninstallMcpUseCase.execute(name, progress);
+
+  if (result.success) {
+    showSuccess(`MCP "${name}" uninstalled successfully`);
+  } else {
+    showError(result.error ?? "MCP uninstallation failed");
+    process.exit(1);
+  }
+}
+
+async function handleMcpOutdated(): Promise<void> {
+  const progress = createProgressReporter();
+  progress.start("Checking for outdated MCPs...");
+
+  const installed = await mcpService.listInstalled();
+  const available = await mcpService.listAvailable();
+
+  progress.stop("Check complete");
+
+  if (installed.length === 0) {
+    showSuccess("No MCPs installed");
+    return;
+  }
+
+  console.log();
+  for (const mcp of installed) {
+    const registryMcp = available.find((m) => m.name === mcp.name);
+    if (registryMcp && registryMcp.version) {
+      console.log(`  ${mcp.name}: installed (registry version: ${registryMcp.version})`);
+    } else {
+      console.log(`  ${mcp.name}: installed (not in registry)`);
+    }
+  }
+  console.log();
+}
+
 async function handleInteractive(): Promise<void> {
   showBanner();
 
@@ -125,7 +242,7 @@ async function handleInteractive(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const { command, args, flags } = parseArgs(process.argv);
+  const { command, subcommand, args, flags } = parseArgs(process.argv);
 
   if (flags.help) {
     showHelp();
@@ -155,6 +272,34 @@ async function main(): Promise<void> {
 
     case "search":
       await handleSearch(args.join(" "));
+      break;
+
+    case "outdated":
+      await handleOutdated();
+      break;
+
+    case "validate":
+      await handleValidate(args[0]);
+      break;
+
+    case "mcp":
+      switch (subcommand) {
+        case "list":
+          await handleMcpList();
+          break;
+        case "install":
+          await handleMcpInstall(args[0]);
+          break;
+        case "uninstall":
+          await handleMcpUninstall(args[0]);
+          break;
+        case "outdated":
+          await handleMcpOutdated();
+          break;
+        default:
+          showError("Usage: claude-skills mcp <list|install|uninstall|outdated>");
+          process.exit(1);
+      }
       break;
 
     case "interactive":

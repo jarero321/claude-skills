@@ -2,8 +2,9 @@ import * as p from "@clack/prompts";
 import chalk from "chalk";
 import figlet from "figlet";
 import gradient from "gradient-string";
-import type { SkillManifest, InstalledSkill } from "../../domain/interfaces/index.ts";
-import type { ProgressReporter } from "../../application/use-cases/index.ts";
+import type { SkillManifest, InstalledSkill, ValidationResult } from "../../domain/interfaces/index.ts";
+import type { ProgressReporter, OutdatedSkill } from "../../application/use-cases/index.ts";
+import type { McpManifest } from "../../domain/interfaces/mcp-service.interface.ts";
 
 const skillsGradient = gradient(["#00d4ff", "#7c3aed", "#f472b6"]);
 
@@ -191,4 +192,124 @@ export function showInstallSuccess(skill: InstalledSkill): void {
     "Success"
   );
   p.outro(chalk.green("Installation complete!"));
+}
+
+export function showOutdatedResults(skills: OutdatedSkill[]): void {
+  if (skills.length === 0) {
+    p.log.info("No skills installed");
+    return;
+  }
+
+  const outdated = skills.filter((s) => s.hasUpdate);
+  const upToDate = skills.filter((s) => !s.hasUpdate);
+
+  console.log();
+
+  if (outdated.length > 0) {
+    p.log.warn(`${outdated.length} skill${outdated.length === 1 ? "" : "s"} with updates available:`);
+    console.log();
+
+    for (const skill of outdated) {
+      console.log(
+        chalk.yellow(`  ${skill.name}: `) +
+          chalk.dim(`${skill.installedVersion}`) +
+          chalk.yellow(` → `) +
+          chalk.green(`${skill.latestVersion}`) +
+          chalk.yellow(` (update available)`)
+      );
+    }
+    console.log();
+  }
+
+  if (upToDate.length > 0) {
+    p.log.success(`${upToDate.length} skill${upToDate.length === 1 ? "" : "s"} up to date:`);
+    console.log();
+
+    for (const skill of upToDate) {
+      console.log(
+        chalk.green(`  ${skill.name}: `) +
+          chalk.dim(`${skill.installedVersion}`) +
+          chalk.green(` (up to date)`)
+      );
+    }
+    console.log();
+  }
+}
+
+export function showValidationResult(path: string, result: ValidationResult): void {
+  console.log();
+
+  if (result.valid) {
+    p.log.success(`Skill at ${path} is valid`);
+  } else {
+    p.log.error(`Skill at ${path} has validation errors:`);
+  }
+
+  if (result.errors.length > 0) {
+    console.log();
+    for (const error of result.errors) {
+      console.log(chalk.red(`  ✗ ${error}`));
+    }
+  }
+
+  if (result.warnings.length > 0) {
+    console.log();
+    for (const warning of result.warnings) {
+      console.log(chalk.yellow(`  ⚠ ${warning}`));
+    }
+  }
+
+  console.log();
+}
+
+export function showMcpList(mcps: McpManifest[]): void {
+  if (mcps.length === 0) {
+    p.log.info("No MCPs available in registry");
+    return;
+  }
+
+  console.log();
+  p.log.info(`Found ${mcps.length} MCP${mcps.length === 1 ? "" : "s"} available:`);
+  console.log();
+
+  for (const mcp of mcps) {
+    console.log(chalk.cyan(`  ${mcp.name}`) + chalk.dim(` (${mcp.language})`));
+    console.log(chalk.dim(`    ${mcp.description}`));
+    console.log(chalk.dim(`    Repository: ${mcp.repository}`));
+    console.log();
+  }
+}
+
+export function showMcpInstallSuccess(name: string): void {
+  console.log();
+  p.note(
+    `${chalk.cyan("MCP installed:")} ${name}\n\n` +
+      `The MCP has been added to ~/.claude/settings.json\n` +
+      `and will be available in Claude Code.`,
+    "Success"
+  );
+  p.outro(chalk.green("MCP installation complete!"));
+}
+
+export async function selectMcpToInstall(mcps: McpManifest[]): Promise<McpManifest | null> {
+  if (mcps.length === 0) {
+    p.log.warn("No MCPs available");
+    return null;
+  }
+
+  const result = await p.select({
+    message: "Select an MCP to install:",
+    options: mcps.map((mcp) => ({
+      value: mcp.name,
+      label: mcp.name,
+      hint: `${mcp.description} (${mcp.language})`,
+    })),
+  });
+
+  if (p.isCancel(result)) {
+    p.cancel("Operation cancelled");
+    return null;
+  }
+
+  return mcps.find((m) => m.name === result) ?? null;
 }

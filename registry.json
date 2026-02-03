@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "skills": [
     {
       "name": "gitflow",
@@ -7,7 +7,8 @@
       "version": "1.0.0",
       "author": "carlos",
       "repository": "https://github.com/jarero321/skill-gitflow",
-      "tags": ["git", "gitflow", "branching", "workflow", "release"]
+      "tags": ["git", "gitflow", "branching", "workflow", "release"],
+      "license": "MIT"
     },
     {
       "name": "jira-ticket",
@@ -15,7 +16,8 @@
       "version": "1.0.0",
       "author": "carlos",
       "repository": "https://github.com/jarero321/skill-jira-ticket",
-      "tags": ["jira", "tickets", "templates", "agile", "scrum"]
+      "tags": ["jira", "tickets", "templates", "agile", "scrum"],
+      "license": "MIT"
     },
     {
       "name": "atomic-commits",
@@ -23,7 +25,33 @@
       "version": "1.0.0",
       "author": "carlos",
       "repository": "https://github.com/jarero321/skill-atomic-commits",
-      "tags": ["git", "commits", "conventional-commits", "atomic", "gitflow"]
+      "tags": ["git", "commits", "conventional-commits", "atomic", "gitflow"],
+      "license": "MIT"
+    },
+    {
+      "name": "dev-docs",
+      "description": "Generate professional README files with badges, tables, and developer-friendly structure",
+      "version": "1.0.0",
+      "author": "carlos",
+      "repository": "https://github.com/jarero321/skill-dev-docs",
+      "tags": ["documentation", "readme", "badges", "markdown", "developer-experience"],
+      "license": "MIT"
+    }
+  ],
+  "mcps": [
+    {
+      "name": "repo-monitor",
+      "description": "GitHub repository monitoring MCP server for tracking issues, PRs and releases",
+      "repository": "https://github.com/jarero321/mcp-repo-monitor",
+      "language": "go",
+      "version": "1.0.0",
+      "install": {
+        "type": "binary",
+        "build": "make build"
+      },
+      "config": {
+        "command": "./bin/mcp-repo-monitor"
+      }
     }
   ]
 }
