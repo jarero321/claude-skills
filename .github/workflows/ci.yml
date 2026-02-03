@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    uses: jarero321/shared-workflows/.github/workflows/node-ci.yml@main
+    with:
+      package-manager: 'bun'
+      run-lint: false
+      run-typecheck: false
+      run-tests: true
+      run-build: true
+      test-command: 'bun run test:run'
+      build-command: 'bun run build'
