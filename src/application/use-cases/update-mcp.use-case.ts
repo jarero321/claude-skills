@@ -12,7 +12,7 @@ export class UpdateMcpUseCase {
   constructor(private readonly mcpService: McpService) {}
 
   async execute(name: string, progress: ProgressReporter): Promise<UpdateMcpResult> {
-    progress.start(`Checking MCP "${name}"...`);
+    progress.start(`Updating MCP "${name}"...`);
 
     const isInstalled = await this.mcpService.isInstalled(name);
     if (!isInstalled) {
@@ -25,9 +25,6 @@ export class UpdateMcpUseCase {
       progress.stop(`MCP "${name}" not found in registry`);
       return { success: false, error: `MCP "${name}" not found in registry` };
     }
-
-    progress.stop(`Found ${manifest.name}`);
-    progress.start(`Updating ${manifest.name}...`);
 
     try {
       await this.mcpService.update(name, manifest);
