@@ -69,6 +69,40 @@ export class McpServiceImpl implements McpService {
     await this.writeClaudeSettings(settings);
   }
 
+  async update(name: string, manifest: McpManifest): Promise<void> {
+    const installPath = join(MCP_INSTALL_DIR, name);
+
+    if (!existsSync(installPath)) {
+      throw new Error(`MCP "${name}" installation directory not found`);
+    }
+
+    await execSafe("git pull", { cwd: installPath });
+
+    if (manifest.install.build) {
+      await execSafe(manifest.install.build, { cwd: installPath });
+    }
+
+    const settings = await this.readClaudeSettings();
+
+    if (!settings.mcpServers || !settings.mcpServers[name]) {
+      throw new Error(`MCP "${name}" not found in Claude settings`);
+    }
+
+    const existingEnv = settings.mcpServers[name].env;
+
+    const command = manifest.config.command.startsWith("./")
+      ? join(installPath, manifest.config.command)
+      : manifest.config.command;
+
+    settings.mcpServers[name] = {
+      command,
+      args: manifest.config.args,
+      env: existingEnv,
+    };
+
+    await this.writeClaudeSettings(settings);
+  }
+
   async uninstall(name: string): Promise<void> {
     const installPath = join(MCP_INSTALL_DIR, name);
 

@@ -10,3 +10,5 @@ export { InstallMcpUseCase } from "./install-mcp.use-case.ts";
 export type { InstallMcpResult } from "./install-mcp.use-case.ts";
 export { UninstallMcpUseCase } from "./uninstall-mcp.use-case.ts";
 export type { UninstallMcpResult } from "./uninstall-mcp.use-case.ts";
+export { UpdateMcpUseCase } from "./update-mcp.use-case.ts";
+export type { UpdateMcpResult } from "./update-mcp.use-case.ts";

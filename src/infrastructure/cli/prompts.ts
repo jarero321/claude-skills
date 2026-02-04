@@ -60,7 +60,7 @@ export async function selectAction(): Promise<InteractiveAction | null> {
   return result as InteractiveAction;
 }
 
-export type McpAction = "install" | "uninstall" | "list" | "outdated" | "back";
+export type McpAction = "install" | "uninstall" | "update" | "list" | "outdated" | "back";
 
 export async function selectMcpAction(): Promise<McpAction | null> {
   const result = await p.select({
@@ -68,6 +68,7 @@ export async function selectMcpAction(): Promise<McpAction | null> {
     options: [
       { value: "install", label: "Install MCP", hint: "Add a new MCP server" },
       { value: "uninstall", label: "Uninstall MCP", hint: "Remove installed MCP" },
+      { value: "update", label: "Update MCP", hint: "Update installed MCP" },
       { value: "list", label: "List available", hint: "Show all MCPs" },
       { value: "outdated", label: "Check updates", hint: "Find outdated MCPs" },
       { value: "back", label: "Back", hint: "Return to main menu" },
@@ -89,6 +90,28 @@ export async function selectMcpToUninstall(mcps: InstalledMcp[]): Promise<Instal
 
   const result = await p.select({
     message: "Select an MCP to uninstall:",
+    options: mcps.map((mcp) => ({
+      value: mcp.name,
+      label: mcp.name,
+      hint: `Installed at ${mcp.path}`,
+    })),
+  });
+
+  if (p.isCancel(result)) {
+    return null;
+  }
+
+  return mcps.find((m) => m.name === result) ?? null;
+}
+
+export async function selectMcpToUpdate(mcps: InstalledMcp[]): Promise<InstalledMcp | null> {
+  if (mcps.length === 0) {
+    p.log.warn("No MCPs installed");
+    return null;
+  }
+
+  const result = await p.select({
+    message: "Select an MCP to update:",
     options: mcps.map((mcp) => ({
       value: mcp.name,
       label: mcp.name,

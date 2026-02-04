@@ -8,7 +8,7 @@ export type Command =
   | "mcp"
   | "interactive";
 
-export type McpSubcommand = "list" | "install" | "uninstall" | "outdated";
+export type McpSubcommand = "list" | "install" | "uninstall" | "update" | "outdated";
 
 export interface ParsedArgs {
   command: Command;
@@ -74,6 +74,7 @@ MCP Commands:
   mcp list                  List available MCPs in registry
   mcp install <name>        Install an MCP server
   mcp uninstall <name>      Uninstall an MCP server
+  mcp update <name>         Update an installed MCP server
   mcp outdated              Check for outdated MCPs
 
 Options:

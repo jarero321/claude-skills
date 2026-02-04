@@ -7,6 +7,7 @@ import {
   CheckOutdatedUseCase,
   InstallMcpUseCase,
   UninstallMcpUseCase,
+  UpdateMcpUseCase,
 } from "./application/use-cases/index.ts";
 import {
   FileServiceImpl,
@@ -28,6 +29,7 @@ import {
   selectSkillToInstall,
   selectSkillToUninstall,
   selectMcpToUninstall,
+  selectMcpToUpdate,
   confirmAction,
   createProgressReporter,
   showSkillsList,
@@ -58,6 +60,7 @@ const searchUseCase = new SearchSkillsUseCase(registryService);
 const checkOutdatedUseCase = new CheckOutdatedUseCase(fileService, registryService);
 const installMcpUseCase = new InstallMcpUseCase(mcpService);
 const uninstallMcpUseCase = new UninstallMcpUseCase(mcpService);
+const updateMcpUseCase = new UpdateMcpUseCase(mcpService);
 
 async function handleInstall(skillName?: string, repoUrl?: string, exitOnError = true): Promise<void> {
   const progress = createProgressReporter();
@@ -215,6 +218,27 @@ async function handleMcpUninstall(name?: string, exitOnError = true): Promise<vo
   }
 }
 
+async function handleMcpUpdate(name?: string, exitOnError = true): Promise<void> {
+  let mcpName = name;
+
+  if (!mcpName) {
+    const mcps = await mcpService.listInstalled();
+    const selected = await selectMcpToUpdate(mcps);
+    if (!selected) return;
+    mcpName = selected.name;
+  }
+
+  const progress = createProgressReporter();
+  const result = await updateMcpUseCase.execute(mcpName, progress);
+
+  if (result.success && result.mcp) {
+    showSuccess(`MCP "${result.mcp.name}" updated successfully`);
+  } else {
+    showError(result.error ?? "MCP update failed");
+    if (exitOnError) process.exit(1);
+  }
+}
+
 async function handleMcpOutdated(): Promise<void> {
   const progress = createProgressReporter();
   progress.start("Checking for outdated MCPs...");
@@ -279,6 +303,9 @@ async function handleMcpMenu(): Promise<void> {
       break;
     case "uninstall":
       await handleMcpUninstall(undefined, false);
+      break;
+    case "update":
+      await handleMcpUpdate(undefined, false);
       break;
     case "list":
       await handleMcpList();
@@ -387,11 +414,14 @@ async function main(): Promise<void> {
         case "uninstall":
           await handleMcpUninstall(args[0]);
           break;
+        case "update":
+          await handleMcpUpdate(args[0]);
+          break;
         case "outdated":
           await handleMcpOutdated();
           break;
         default:
-          showError("Usage: claude-skills mcp <list|install|uninstall|outdated>");
+          showError("Usage: claude-skills mcp <list|install|uninstall|update|outdated>");
           process.exit(1);
       }
       break;

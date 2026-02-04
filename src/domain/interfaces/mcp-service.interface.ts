@@ -51,6 +51,7 @@ export interface McpService {
   listAvailable(): Promise<McpManifest[]>;
   findByName(name: string): Promise<McpManifest | null>;
   install(manifest: McpManifest, envVars?: Record<string, string>): Promise<void>;
+  update(name: string, manifest: McpManifest): Promise<void>;
   uninstall(name: string): Promise<void>;
   listInstalled(): Promise<InstalledMcp[]>;
   isInstalled(name: string): Promise<boolean>;

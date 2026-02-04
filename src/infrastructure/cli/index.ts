@@ -12,6 +12,7 @@ export {
   selectSkillToInstall,
   selectSkillToUninstall,
   selectMcpToUninstall,
+  selectMcpToUpdate,
   confirmAction,
   createProgressReporter,
   showSkillsList,
