@@ -26,6 +26,7 @@ export class UpdateMcpUseCase {
       return { success: false, error: `MCP "${name}" not found in registry` };
     }
 
+    progress.stop(`Found ${manifest.name}`);
     progress.start(`Updating ${manifest.name}...`);
 
     try {
