@@ -1,4 +1,5 @@
 import { join } from "path";
+import { tmpdir } from "os";
 import type { ProgressReporter } from "@cjarero183006/cli-builder/interfaces";
 import { wrapError } from "@cjarero183006/cli-builder/utils";
 import type { FileService, GitService, SkillRegistry, InstalledSkill, SkillManifest } from "../../domain/interfaces/index.ts";
@@ -67,8 +68,19 @@ export class InstallSkillUseCase {
 
     progress.start(`Cloning ${skillName}...`);
 
+    const monorepoPath = manifest.path;
+
     try {
-      await this.gitService.clone(repoUrl, destPath);
+      if (monorepoPath) {
+        const tmpDir = join(tmpdir(), `claude-skill-${skillName}-${Date.now()}`);
+        await this.gitService.clone(repoUrl, tmpDir);
+
+        const sourcePath = join(tmpDir, monorepoPath);
+        await this.fileService.copyDir(sourcePath, destPath);
+        await this.fileService.removeDir(tmpDir);
+      } else {
+        await this.gitService.clone(repoUrl, destPath);
+      }
     } catch (error) {
       progress.stop(`Failed to clone repository`);
       return { success: false, error: wrapError(error, "Failed to clone repository") };

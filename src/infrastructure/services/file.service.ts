@@ -1,6 +1,6 @@
 import { homedir } from "os";
 import { join } from "path";
-import { mkdir, readdir, readFile, writeFile, rm } from "fs/promises";
+import { cp, mkdir, readdir, readFile, writeFile, rm } from "fs/promises";
 import { existsSync } from "fs";
 import type { FileService, InstalledSkill, SkillManifest } from "../../domain/interfaces/index.ts";
 
@@ -79,5 +79,13 @@ export class FileServiceImpl implements FileService {
   hasSkillFile(skillPath: string): boolean {
     const skillFilePath = join(skillPath, SKILL_FILE);
     return existsSync(skillFilePath);
+  }
+
+  async copyDir(src: string, dest: string): Promise<void> {
+    await cp(src, dest, { recursive: true });
+  }
+
+  async removeDir(dirPath: string): Promise<void> {
+    await rm(dirPath, { recursive: true, force: true });
   }
 }

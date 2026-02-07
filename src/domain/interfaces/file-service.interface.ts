@@ -9,4 +9,6 @@ export interface FileService {
   removeSkill(skillName: string): Promise<void>;
   skillExists(skillName: string): boolean;
   hasSkillFile(skillPath: string): boolean;
+  copyDir(src: string, dest: string): Promise<void>;
+  removeDir(dirPath: string): Promise<void>;
 }

@@ -4,6 +4,7 @@ export interface SkillManifest {
   version: string;
   author: string;
   repository: string;
+  path?: string;
   tags: string[];
   license?: string;
 }
