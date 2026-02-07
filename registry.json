@@ -6,7 +6,8 @@
       "description": "Manage Git Flow branching strategy with automated branch creation and merging",
       "version": "1.0.0",
       "author": "carlos",
-      "repository": "https://github.com/jarero321/skill-gitflow",
+      "repository": "https://github.com/jarero321/claude-skills-kit",
+      "path": "skills/gitflow",
       "tags": ["git", "gitflow", "branching", "workflow", "release"],
       "license": "MIT"
     },
@@ -15,7 +16,8 @@
       "description": "Generate structured JIRA ticket templates for features, bugs, hotfixes and spikes",
       "version": "1.0.0",
       "author": "carlos",
-      "repository": "https://github.com/jarero321/skill-jira-ticket",
+      "repository": "https://github.com/jarero321/claude-skills-kit",
+      "path": "skills/jira-ticket",
       "tags": ["jira", "tickets", "templates", "agile", "scrum"],
       "license": "MIT"
     },
@@ -24,7 +26,8 @@
       "description": "Write clean, atomic commits following Conventional Commits with GitFlow integration",
       "version": "1.0.0",
       "author": "carlos",
-      "repository": "https://github.com/jarero321/skill-atomic-commits",
+      "repository": "https://github.com/jarero321/claude-skills-kit",
+      "path": "skills/atomic-commits",
       "tags": ["git", "commits", "conventional-commits", "atomic", "gitflow"],
       "license": "MIT"
     },
@@ -33,7 +36,8 @@
       "description": "Generate professional README files with badges, tables, and developer-friendly structure",
       "version": "1.0.0",
       "author": "carlos",
-      "repository": "https://github.com/jarero321/skill-dev-docs",
+      "repository": "https://github.com/jarero321/claude-skills-kit",
+      "path": "skills/dev-docs",
       "tags": ["documentation", "readme", "badges", "markdown", "developer-experience"],
       "license": "MIT"
     }
@@ -69,6 +73,49 @@
             "required": false
           }
         ]
+      }
+    },
+    {
+      "name": "obsidian-planner",
+      "description": "Obsidian vault planning MCP server with GTD + PARA methodology. 17 tools for daily notes, inbox, tasks, projects, weekly reviews and search.",
+      "repository": "https://github.com/jarero321/mcp-obsidian-planner",
+      "language": "typescript",
+      "version": "1.0.0",
+      "install": {
+        "type": "npm",
+        "build": "npm install && npm run build"
+      },
+      "config": {
+        "command": "node",
+        "args": ["dist/main.js"],
+        "envVars": [
+          {
+            "name": "VAULT_PATH",
+            "description": "Absolute path to Obsidian vault",
+            "required": true
+          }
+        ]
+      }
+    }
+  ],
+  "plugins": [
+    {
+      "name": "carlos-statusline",
+      "description": "DX-first statusline with ANSI progress bars, context metrics, cost tracking, and git info",
+      "repository": "https://github.com/jarero321/plugin-carlos-statusline",
+      "version": "2.0.0",
+      "author": "carlos",
+      "type": "statusline",
+      "install": {
+        "scripts": ["scripts/statusline.sh"]
+      },
+      "config": {
+        "settingsKey": "statusLine",
+        "settingsValue": {
+          "type": "command",
+          "command": "./scripts/statusline.sh",
+          "padding": 0
+        }
       }
     }
   ]
