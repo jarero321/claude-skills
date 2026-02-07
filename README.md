@@ -1,30 +1,48 @@
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,5,30&height=180&section=header&text=claude-skills&fontSize=36&fontColor=fff&animation=fadeIn&fontAlignY=32" />
+
 <div align="center">
 
-```
-      _                 _                 _    _ _ _
-  ___| | __ _ _   _  __| | ___   ___| | _(_) | |___
- / __| |/ _` | | | |/ _` |/ _ \ / __| |/ / | | / __|
-| (__| | (_| | |_| | (_| |  __/ \__ \   <| | | \__ \
- \___|_|\__,_|\__,_|\__,_|\___| |___/_|\_\_|_|_|___/
-```
+![Build](https://img.shields.io/github/actions/workflow/status/jarero321/claude-skills/ci.yml?branch=main&style=for-the-badge)
+![npm](https://img.shields.io/npm/v/@cjarero183006/claude-skills?style=for-the-badge)
+![Downloads](https://img.shields.io/npm/dm/@cjarero183006/claude-skills?style=for-the-badge&color=7c3aed)
+![License](https://img.shields.io/github/license/jarero321/claude-skills?style=for-the-badge)
 
-### I got tired of manually copying skills between projects. So I built this.
+**CLI for installing, managing and discovering Claude Code Agent Skills.**
 
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18-339933?logo=node.js&logoColor=white)
-
-[![npm version](https://img.shields.io/npm/v/@cjarero183006/claude-skills?style=flat-square&color=00d4ff)](https://www.npmjs.com/package/@cjarero183006/claude-skills)
-[![npm downloads](https://img.shields.io/npm/dm/@cjarero183006/claude-skills?style=flat-square&color=7c3aed)](https://www.npmjs.com/package/@cjarero183006/claude-skills)
-[![License](https://img.shields.io/badge/license-MIT-brightgreen?style=flat-square)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-62%20passed-brightgreen?style=flat-square)](package.json)
-
-**npm for Claude Code agent skills**
-
-[Quick Start](#quick-start) · [Commands](#commands) · [MCP Servers](#mcp-servers) · [Create Your Own](#creating-skills)
+[Quick Start](#quick-start) •
+[Commands](#commands) •
+[Available Skills](#available-skills) •
+[MCP Servers](#mcp-servers) •
+[Creating Skills](#creating-skills)
 
 </div>
 
 ---
+
+## Features
+
+| Feature | Description |
+|:--------|:------------|
+| **Interactive UI** | Menu-driven interface powered by @clack/prompts |
+| **Skills Registry** | Install, search, and update skills from a central registry |
+| **MCP Management** | Install MCP servers with guided configuration wizard |
+| **Plugin System** | Install and manage plugins for extended functionality |
+| **GitHub Install** | Install skills directly from any GitHub repository |
+| **Outdated Check** | Detect and update outdated skills, MCPs, and plugins |
+
+## Tech Stack
+
+<div align="center">
+
+**Languages & Frameworks**
+
+<img src="https://skillicons.dev/icons?i=ts,nodejs&perline=8" alt="languages" />
+
+**Infrastructure & Tools**
+
+<img src="https://skillicons.dev/icons?i=bun,githubactions,npm&perline=8" alt="infra" />
+
+</div>
 
 ## Why I Built This
 
@@ -34,26 +52,6 @@ Claude Code skills are powerful but there's no easy way to:
 - Install MCP servers without manual config
 
 I wanted `npm install` but for AI agent capabilities. So I built it.
-
----
-
-## Demo
-
-```
-┌─────────────────────────────────────┐
-│  Claude Skills Manager              │
-│  ─────────────────────────────────  │
-│                                     │
-│  > Install skill                    │
-│    Uninstall skill                  │
-│    List installed                   │
-│    Search skills                    │
-│    MCP Servers                      │
-│    Check updates                    │
-│    Exit                             │
-│                                     │
-└─────────────────────────────────────┘
-```
 
 ---
 
@@ -72,33 +70,66 @@ That's it. Interactive menu guides you through everything.
 
 ---
 
+## Demo
+
+```
+┌─────────────────────────────────────┐
+│  Claude Skills Manager              │
+│  ─────────────────────────────────  │
+│                                     │
+│  > Install skill                    │
+│    Uninstall skill                  │
+│    List installed                   │
+│    Search skills                    │
+│    MCP Servers                      │
+│    Plugins                          │
+│    Check updates                    │
+│    Exit                             │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+---
+
 ## Commands
 
 ### Skills
 
-| Command | What it does |
-|---------|--------------|
+| Command | Description |
+|:--------|:------------|
 | `install <name>` | Install from registry |
 | `install --repo <url>` | Install from GitHub |
 | `uninstall <name>` | Remove a skill |
-| `list` | Show installed |
-| `search <query>` | Find skills |
+| `list` | Show installed skills |
+| `search <query>` | Find skills in registry |
 | `outdated` | Check for updates |
+| `validate <path>` | Validate a skill directory |
 
 ### MCP Servers
 
-| Command | What it does |
-|---------|--------------|
+| Command | Description |
+|:--------|:------------|
 | `mcp list` | Available MCP servers |
 | `mcp install <name>` | Install with guided config |
 | `mcp uninstall <name>` | Remove MCP server |
+| `mcp update <name>` | Update MCP server |
+| `mcp outdated` | Check for outdated MCPs |
+
+### Plugins
+
+| Command | Description |
+|:--------|:------------|
+| `plugin list` | Available plugins |
+| `plugin install <name>` | Install plugin |
+| `plugin uninstall <name>` | Remove plugin |
+| `plugin update <name>` | Update plugin |
 
 ---
 
 ## Available Skills
 
-| Skill | What it does |
-|-------|--------------|
+| Skill | Description |
+|:------|:------------|
 | `gitflow` | Git Flow branching automation |
 | `jira-ticket` | JIRA ticket template generator |
 | `atomic-commits` | Conventional commits with GitFlow |
@@ -112,11 +143,9 @@ That's it. Interactive menu guides you through everything.
 
 MCP servers extend Claude's capabilities with external tools.
 
-### Available MCPs
-
-| MCP | What it does | Language |
-|-----|--------------|----------|
-| `repo-monitor` | GitHub monitoring: PRs, CI, rollbacks | Go |
+| MCP | Description | Language |
+|:----|:------------|:---------|
+| `repo-monitor` | GitHub monitoring: PRs, CI, drift, rollbacks | Go |
 
 ### Environment Variables
 
@@ -173,43 +202,52 @@ Clean Architecture with dependency injection:
 
 ```
 src/
-├── application/      # Use cases
-├── domain/           # Interfaces
-├── infrastructure/   # CLI, services
+├── application/      # Use cases (install, uninstall, search, update)
+├── domain/           # Interfaces and contracts
+├── infrastructure/   # CLI, services, registry
 └── __tests__/        # 62 tests
 ```
 
 | Aspect | Choice |
-|--------|--------|
-| Architecture | Clean Architecture |
-| Testing | Vitest (62 passing) |
-| Build | tsup (ESM) |
-| CLI UI | @clack/prompts |
-| Styling | chalk + gradient-string |
+|:-------|:-------|
+| **Architecture** | Clean Architecture with DI |
+| **Testing** | Vitest (62 passing) |
+| **Build** | tsup (ESM) |
+| **CLI UI** | @clack/prompts via cli-builder |
+| **Styling** | chalk + gradient-string |
 
 ---
 
 ## Development
 
 ```bash
-git clone https://github.com/jarero321/claude-skills
+git clone https://github.com/jarero321/claude-skills.git
 cd claude-skills
 bun install
 bun run dev
 ```
 
-| Script | What it does |
-|--------|--------------|
+| Script | Description |
+|:-------|:------------|
 | `bun run dev` | Development mode |
 | `bun run build` | Production build |
 | `bun run test` | Watch mode |
-| `bun run test:run` | Single run |
+| `bun run test:run` | Single test run |
+| `bun run test:coverage` | Coverage report |
 
 ---
 
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -218,3 +256,5 @@ MIT
 **[Report Bug](https://github.com/jarero321/claude-skills/issues)** · **[Request Feature](https://github.com/jarero321/claude-skills/issues)**
 
 </div>
+
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=0,2,5,30&height=120&section=footer" />
