@@ -130,12 +130,13 @@ That's it. Interactive menu guides you through everything.
 
 | Skill | Description |
 |:------|:------------|
-| `gitflow` | Git Flow branching automation |
-| `jira-ticket` | JIRA ticket template generator |
-| `atomic-commits` | Conventional commits with GitFlow |
-| `dev-docs` | Professional README generator |
+| [`gitflow`](https://github.com/jarero321/claude-skills-kit/tree/main/skills/gitflow) | Git Flow branching automation |
+| [`jira-ticket`](https://github.com/jarero321/claude-skills-kit/tree/main/skills/jira-ticket) | JIRA ticket template generator |
+| [`atomic-commits`](https://github.com/jarero321/claude-skills-kit/tree/main/skills/atomic-commits) | Conventional commits with GitFlow |
+| [`dev-docs`](https://github.com/jarero321/claude-skills-kit/tree/main/skills/dev-docs) | Professional README generator |
+| [`skill-creator`](https://github.com/jarero321/claude-skills-kit/tree/main/skills/skill-creator) | Scaffold new skills from template |
 
-> Browse all: `claude-skills search`
+> Browse all: `claude-skills search` · [View registry](https://github.com/jarero321/claude-skills-kit)
 
 ---
 
