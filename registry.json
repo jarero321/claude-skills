@@ -33,12 +33,22 @@
     },
     {
       "name": "dev-docs",
-      "description": "Generate professional README files with badges, tables, and developer-friendly structure",
-      "version": "1.0.0",
+      "description": "Generate visually compelling README files using capsule-render headers, skillicons.dev tech stacks, and for-the-badge action badges",
+      "version": "2.0.0",
       "author": "carlos",
       "repository": "https://github.com/jarero321/claude-skills-kit",
       "path": "skills/dev-docs",
-      "tags": ["documentation", "readme", "badges", "markdown", "developer-experience"],
+      "tags": ["documentation", "readme", "badges", "markdown", "developer-experience", "visual"],
+      "license": "MIT"
+    },
+    {
+      "name": "skill-creator",
+      "description": "Scaffold well-structured Claude Code skills with validated frontmatter, prescriptive rules, and ready-to-publish structure",
+      "version": "1.0.0",
+      "author": "carlos",
+      "repository": "https://github.com/jarero321/claude-skills-kit",
+      "path": "skills/skill-creator",
+      "tags": ["skills", "scaffolding", "meta", "claude-code", "developer-experience"],
       "license": "MIT"
     }
   ],
