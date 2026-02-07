@@ -16,6 +16,7 @@ import type { ProgressReporter } from "@cjarero183006/cli-builder/interfaces";
 import type { SkillManifest, InstalledSkill, ValidationResult } from "../../domain/interfaces/index.ts";
 import type { OutdatedSkill } from "../../application/use-cases/index.ts";
 import type { McpManifest, InstalledMcp, McpEnvVar } from "../../domain/interfaces/mcp-service.interface.ts";
+import type { PluginManifest, InstalledPlugin } from "../../domain/interfaces/plugin-service.interface.ts";
 
 export { createProgressReporter, sleep };
 export type { ProgressReporter };
@@ -37,7 +38,7 @@ export function showGoodbye(): void {
   });
 }
 
-export type InteractiveAction = "install" | "uninstall" | "list" | "search" | "mcp" | "outdated" | "exit";
+export type InteractiveAction = "install" | "uninstall" | "list" | "search" | "mcp" | "plugin" | "outdated" | "exit";
 
 export async function selectAction(): Promise<InteractiveAction | null> {
   const result = await p.select({
@@ -48,6 +49,7 @@ export async function selectAction(): Promise<InteractiveAction | null> {
       { value: "list", label: "List installed", hint: "Show all skills" },
       { value: "search", label: "Search skills", hint: "Find in registry" },
       { value: "mcp", label: "MCP Servers", hint: "Manage MCP servers" },
+      { value: "plugin", label: "Plugins", hint: "Manage plugins" },
       { value: "outdated", label: "Check updates", hint: "Find outdated skills" },
       { value: "exit", label: "Exit", hint: "Close the CLI" },
     ],
@@ -443,4 +445,120 @@ export function showMcpConfigSummary(name: string, envVars: Record<string, strin
     console.log(chalk.dim(`  ${key}: ${masked}`));
   }
   console.log();
+}
+
+export type PluginAction = "install" | "uninstall" | "update" | "list" | "back";
+
+export async function selectPluginAction(): Promise<PluginAction | null> {
+  const result = await p.select({
+    message: "Plugins",
+    options: [
+      { value: "install", label: "Install plugin", hint: "Add a new plugin" },
+      { value: "uninstall", label: "Uninstall plugin", hint: "Remove installed plugin" },
+      { value: "update", label: "Update plugin", hint: "Update installed plugin" },
+      { value: "list", label: "List available", hint: "Show all plugins" },
+      { value: "back", label: "Back", hint: "Return to main menu" },
+    ],
+  });
+
+  if (p.isCancel(result)) {
+    return null;
+  }
+
+  return result as PluginAction;
+}
+
+export async function selectPluginToInstall(plugins: PluginManifest[]): Promise<PluginManifest | null> {
+  if (plugins.length === 0) {
+    p.log.warn("No plugins available");
+    return null;
+  }
+
+  const result = await p.select({
+    message: "Select a plugin to install:",
+    options: plugins.map((plugin) => ({
+      value: plugin.name,
+      label: plugin.name,
+      hint: `${plugin.description} (${plugin.type})`,
+    })),
+  });
+
+  if (p.isCancel(result)) {
+    return null;
+  }
+
+  return plugins.find((pl) => pl.name === result) ?? null;
+}
+
+export async function selectPluginToUninstall(plugins: InstalledPlugin[]): Promise<InstalledPlugin | null> {
+  if (plugins.length === 0) {
+    p.log.warn("No plugins installed");
+    return null;
+  }
+
+  const result = await p.select({
+    message: "Select a plugin to uninstall:",
+    options: plugins.map((plugin) => ({
+      value: plugin.name,
+      label: plugin.name,
+      hint: `Installed at ${plugin.path}`,
+    })),
+  });
+
+  if (p.isCancel(result)) {
+    return null;
+  }
+
+  return plugins.find((pl) => pl.name === result) ?? null;
+}
+
+export async function selectPluginToUpdate(plugins: InstalledPlugin[]): Promise<InstalledPlugin | null> {
+  if (plugins.length === 0) {
+    p.log.warn("No plugins installed");
+    return null;
+  }
+
+  const result = await p.select({
+    message: "Select a plugin to update:",
+    options: plugins.map((plugin) => ({
+      value: plugin.name,
+      label: plugin.name,
+      hint: `Installed at ${plugin.path}`,
+    })),
+  });
+
+  if (p.isCancel(result)) {
+    return null;
+  }
+
+  return plugins.find((pl) => pl.name === result) ?? null;
+}
+
+export function showPluginList(plugins: PluginManifest[]): void {
+  if (plugins.length === 0) {
+    p.log.info("No plugins available in registry");
+    return;
+  }
+
+  console.log();
+  p.log.info(`Found ${plugins.length} plugin${plugins.length === 1 ? "" : "s"} available:`);
+  console.log();
+
+  for (const plugin of plugins) {
+    console.log(chalk.cyan(`  ${plugin.name}`) + chalk.dim(` (${plugin.type})`));
+    console.log(chalk.dim(`    ${plugin.description}`));
+    console.log(chalk.dim(`    Repository: ${plugin.repository}`));
+    console.log();
+  }
+}
+
+export function showPluginInstallSuccess(name: string): void {
+  console.log();
+  showNote(
+    `${chalk.cyan("Plugin installed:")} ${name}\n\n` +
+      `The plugin has been configured in ~/.claude/settings.json\n` +
+      `and will be available in Claude Code.`,
+    "Success"
+  );
+  p.outro(chalk.green("Plugin installation complete!"));
 }

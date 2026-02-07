@@ -1,4 +1,4 @@
-import type { SkillRegistry, SkillManifest, McpManifest } from "../../domain/interfaces/index.ts";
+import type { SkillRegistry, SkillManifest, McpManifest, PluginManifest } from "../../domain/interfaces/index.ts";
 
 const REGISTRY_URL = "https://raw.githubusercontent.com/jarero321/claude-skills/main/registry.json";
 
@@ -6,6 +6,7 @@ interface RegistryData {
   version: string;
   skills: SkillManifest[];
   mcps?: McpManifest[];
+  plugins?: PluginManifest[];
 }
 
 export class RegistryServiceImpl implements SkillRegistry {
@@ -61,5 +62,15 @@ export class RegistryServiceImpl implements SkillRegistry {
   async findMcpByName(name: string): Promise<McpManifest | null> {
     const mcps = await this.fetchMcps();
     return mcps.find((mcp) => mcp.name === name) ?? null;
+  }
+
+  async fetchPlugins(): Promise<PluginManifest[]> {
+    const data = await this.fetchRegistry();
+    return data.plugins ?? [];
+  }
+
+  async findPluginByName(name: string): Promise<PluginManifest | null> {
+    const plugins = await this.fetchPlugins();
+    return plugins.find((plugin) => plugin.name === name) ?? null;
   }
 }

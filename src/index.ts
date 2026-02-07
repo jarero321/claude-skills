@@ -8,6 +8,9 @@ import {
   InstallMcpUseCase,
   UninstallMcpUseCase,
   UpdateMcpUseCase,
+  InstallPluginUseCase,
+  UninstallPluginUseCase,
+  UpdatePluginUseCase,
 } from "./application/use-cases/index.ts";
 import {
   FileServiceImpl,
@@ -15,6 +18,7 @@ import {
   RegistryServiceImpl,
   SkillValidatorImpl,
   McpServiceImpl,
+  PluginServiceImpl,
 } from "./infrastructure/services/index.ts";
 import {
   parseArgs,
@@ -25,11 +29,15 @@ import {
   sleep,
   selectAction,
   selectMcpAction,
+  selectPluginAction,
   promptSearchQuery,
   selectSkillToInstall,
   selectSkillToUninstall,
   selectMcpToUninstall,
   selectMcpToUpdate,
+  selectPluginToInstall,
+  selectPluginToUninstall,
+  selectPluginToUpdate,
   confirmAction,
   createProgressReporter,
   showSkillsList,
@@ -45,6 +53,8 @@ import {
   showMcpConfigSummary,
   selectMcpToInstall,
   runEnvVarWizard,
+  showPluginList,
+  showPluginInstallSuccess,
 } from "./infrastructure/cli/index.ts";
 
 const fileService = new FileServiceImpl();
@@ -52,6 +62,7 @@ const gitService = new GitServiceImpl();
 const registryService = new RegistryServiceImpl();
 const skillValidator = new SkillValidatorImpl();
 const mcpService = new McpServiceImpl(registryService);
+const pluginService = new PluginServiceImpl(registryService);
 
 const installUseCase = new InstallSkillUseCase(fileService, gitService, registryService);
 const uninstallUseCase = new UninstallSkillUseCase(fileService);
@@ -61,6 +72,9 @@ const checkOutdatedUseCase = new CheckOutdatedUseCase(fileService, registryServi
 const installMcpUseCase = new InstallMcpUseCase(mcpService);
 const uninstallMcpUseCase = new UninstallMcpUseCase(mcpService);
 const updateMcpUseCase = new UpdateMcpUseCase(mcpService);
+const installPluginUseCase = new InstallPluginUseCase(pluginService);
+const uninstallPluginUseCase = new UninstallPluginUseCase(pluginService);
+const updatePluginUseCase = new UpdatePluginUseCase(pluginService);
 
 async function handleInstall(skillName?: string, repoUrl?: string, exitOnError = true): Promise<void> {
   const progress = createProgressReporter();
@@ -265,6 +279,80 @@ async function handleMcpOutdated(): Promise<void> {
   console.log();
 }
 
+async function handlePluginList(): Promise<void> {
+  const plugins = await pluginService.listAvailable();
+  showPluginList(plugins);
+}
+
+async function handlePluginInstall(name?: string, exitOnError = true): Promise<void> {
+  let pluginName = name;
+
+  if (!pluginName) {
+    const plugins = await pluginService.listAvailable();
+    const selected = await selectPluginToInstall(plugins);
+    if (!selected) return;
+    pluginName = selected.name;
+  }
+
+  const progress = createProgressReporter();
+  const result = await installPluginUseCase.execute(pluginName, progress);
+
+  if (result.success && result.plugin) {
+    showPluginInstallSuccess(result.plugin.name);
+  } else {
+    showError(result.error ?? "Plugin installation failed");
+    if (exitOnError) process.exit(1);
+  }
+}
+
+async function handlePluginUninstall(name?: string, exitOnError = true): Promise<void> {
+  let pluginName = name;
+
+  if (!pluginName) {
+    const plugins = await pluginService.listInstalled();
+    const selected = await selectPluginToUninstall(plugins);
+    if (!selected) return;
+    pluginName = selected.name;
+  }
+
+  const confirmed = await confirmAction(`Are you sure you want to uninstall plugin "${pluginName}"?`);
+  if (!confirmed) {
+    showInfo("Operation cancelled");
+    return;
+  }
+
+  const progress = createProgressReporter();
+  const result = await uninstallPluginUseCase.execute(pluginName, progress);
+
+  if (result.success) {
+    showSuccess(`Plugin "${pluginName}" uninstalled successfully`);
+  } else {
+    showError(result.error ?? "Plugin uninstallation failed");
+    if (exitOnError) process.exit(1);
+  }
+}
+
+async function handlePluginUpdate(name?: string, exitOnError = true): Promise<void> {
+  let pluginName = name;
+
+  if (!pluginName) {
+    const plugins = await pluginService.listInstalled();
+    const selected = await selectPluginToUpdate(plugins);
+    if (!selected) return;
+    pluginName = selected.name;
+  }
+
+  const progress = createProgressReporter();
+  const result = await updatePluginUseCase.execute(pluginName, progress);
+
+  if (result.success && result.plugin) {
+    showSuccess(`Plugin "${result.plugin.name}" updated successfully`);
+  } else {
+    showError(result.error ?? "Plugin update failed");
+    if (exitOnError) process.exit(1);
+  }
+}
+
 async function handleInstallAction(): Promise<void> {
   const query = await promptSearchQuery();
   if (query === null) return;
@@ -316,6 +404,27 @@ async function handleMcpMenu(): Promise<void> {
   }
 }
 
+async function handlePluginMenu(): Promise<void> {
+  const action = await selectPluginAction();
+
+  if (!action || action === "back") return;
+
+  switch (action) {
+    case "install":
+      await handlePluginInstall(undefined, false);
+      break;
+    case "uninstall":
+      await handlePluginUninstall(undefined, false);
+      break;
+    case "update":
+      await handlePluginUpdate(undefined, false);
+      break;
+    case "list":
+      await handlePluginList();
+      break;
+  }
+}
+
 async function executeAction(action: string): Promise<void> {
   try {
     switch (action) {
@@ -333,6 +442,9 @@ async function executeAction(action: string): Promise<void> {
         break;
       case "mcp":
         await handleMcpMenu();
+        break;
+      case "plugin":
+        await handlePluginMenu();
         break;
       case "outdated":
         await handleOutdatedAction();
@@ -422,6 +534,26 @@ async function main(): Promise<void> {
           break;
         default:
           showError("Usage: claude-skills mcp <list|install|uninstall|update|outdated>");
+          process.exit(1);
+      }
+      break;
+
+    case "plugin":
+      switch (subcommand) {
+        case "list":
+          await handlePluginList();
+          break;
+        case "install":
+          await handlePluginInstall(args[0]);
+          break;
+        case "uninstall":
+          await handlePluginUninstall(args[0]);
+          break;
+        case "update":
+          await handlePluginUpdate(args[0]);
+          break;
+        default:
+          showError("Usage: claude-skills plugin <list|install|uninstall|update>");
           process.exit(1);
       }
       break;

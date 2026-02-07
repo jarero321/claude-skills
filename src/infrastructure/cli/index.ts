@@ -1,5 +1,5 @@
 export { parseArgs, showHelp } from "./commands.ts";
-export type { Command, ParsedArgs, McpSubcommand } from "./commands.ts";
+export type { Command, ParsedArgs, McpSubcommand, PluginSubcommand } from "./commands.ts";
 export {
   showBannerUI,
   showSeparator,
@@ -7,12 +7,16 @@ export {
   sleep,
   selectAction,
   selectMcpAction,
+  selectPluginAction,
   promptSkillName,
   promptSearchQuery,
   selectSkillToInstall,
   selectSkillToUninstall,
   selectMcpToUninstall,
   selectMcpToUpdate,
+  selectPluginToInstall,
+  selectPluginToUninstall,
+  selectPluginToUpdate,
   confirmAction,
   createProgressReporter,
   showSkillsList,
@@ -28,5 +32,7 @@ export {
   showMcpConfigSummary,
   selectMcpToInstall,
   runEnvVarWizard,
+  showPluginList,
+  showPluginInstallSuccess,
 } from "./prompts.ts";
-export type { InteractiveAction, McpAction } from "./prompts.ts";
+export type { InteractiveAction, McpAction, PluginAction } from "./prompts.ts";

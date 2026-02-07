@@ -6,13 +6,16 @@ export type Command =
   | "outdated"
   | "validate"
   | "mcp"
+  | "plugin"
   | "interactive";
 
 export type McpSubcommand = "list" | "install" | "uninstall" | "update" | "outdated";
 
+export type PluginSubcommand = "list" | "install" | "uninstall" | "update";
+
 export interface ParsedArgs {
   command: Command;
-  subcommand?: McpSubcommand;
+  subcommand?: McpSubcommand | PluginSubcommand;
   args: string[];
   flags: {
     repo?: string;
@@ -37,8 +40,8 @@ export function parseArgs(argv: string[]): ParsedArgs {
 
   let startIndex = 1;
 
-  if (command === "mcp" && args[1] && !args[1].startsWith("-")) {
-    subcommand = args[1] as McpSubcommand;
+  if ((command === "mcp" || command === "plugin") && args[1] && !args[1].startsWith("-")) {
+    subcommand = args[1] as McpSubcommand | PluginSubcommand;
     startIndex = 2;
   }
 
@@ -77,6 +80,12 @@ MCP Commands:
   mcp update <name>         Update an installed MCP server
   mcp outdated              Check for outdated MCPs
 
+Plugin Commands:
+  plugin list               List available plugins in registry
+  plugin install <name>     Install a plugin
+  plugin uninstall <name>   Uninstall a plugin
+  plugin update <name>      Update an installed plugin
+
 Options:
   -r, --repo <url>    Git repository URL for direct installation
   -h, --help          Show this help message
@@ -91,6 +100,8 @@ Examples:
   claude-skills validate ./my-skill
   claude-skills mcp list
   claude-skills mcp install repo-monitor
+  claude-skills plugin list
+  claude-skills plugin install carlos-statusline
   claude-skills                      # Interactive mode
 `);
 }

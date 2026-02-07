@@ -19,3 +19,10 @@ export type {
   ClaudeSettingsMcpServer,
   McpService,
 } from "./mcp-service.interface.ts";
+export type {
+  PluginManifest,
+  PluginInstallConfig,
+  PluginSettingsConfig,
+  InstalledPlugin,
+  PluginService,
+} from "./plugin-service.interface.ts";
